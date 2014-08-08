@@ -1,0 +1,48 @@
+Title:      PygBlog MMD metadata test
+Author:     Steinar Vittersø Kaldager
+Comment:    This file tests basic features of the
+            multimarkdown language as parsed by the
+            pygblog MMD engine.
+Tags:       simple test
+            tags
+            go here and can go on multiple lines
+Visible:    yes
+Encoding-Note: These files should always be UTF-8.
+
+Main header
+===========
+
+Decorating text
+---------------
+
+Text can be _italic_ or **bold**.
+
+You can include any international characters you like, as long as
+everything is encoded in UTF-8: Æ Ø Å, æ ø å, Göteborg, naïveté.
+
+Lists
+-----
+
+* Item A
+* Item B
+* Item C
+
+1. Ordered item A
+2. Ordered item B
+    * Nested Item B.A
+    * Nested Item B.B
+
+### Deep subheader
+
+You can always write the subheaders with only # characters prefixed.
+
+Code blocks
+-----------
+
+```python
+def factorial(n):
+    import operator
+    return reduce(operator.mul, xrange(2,n+1), 1)
+```
+
+That was some Python code.
