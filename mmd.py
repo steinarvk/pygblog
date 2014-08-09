@@ -12,14 +12,15 @@ class MultiMarkdown (object):
     def __init__(self, path):
         self.path = path
 
-    def call(self, data, *args):
+    def call(self, text, *args):
         cmdline = [self.path]
         cmdline.extend(args)
         p = Popen(cmdline, stdin=PIPE, stdout=PIPE)
+        data = text.encode("utf8")
         rv, _ = p.communicate(data)
         if p.returncode:
             raise MMDParseError()
-        return rv
+        return rv.decode("utf8")
 
     def parse_metadata(self, data):
         """Parse MMD string and return a metadata dictionary."""
