@@ -31,20 +31,18 @@ class MultiMarkdown (object):
             rv[key] = self.call(data, "-e", key)
         return rv
 
-    def render_html(self, data):
+    def render_html_snippet(self, data):
+        """Parse MMD string and return a HTML snippet."""
         return self.call(data, "--snippet")
     
-    def parse(self, data):
-        """Parse MMD string and return (metadata_dict, html)."""
-        return self.parse_metadata(data), self.render_html(data)
-
 if __name__ == '__main__':
     import webbrowser
     import sys
     mmd = MultiMarkdown("./MultiMarkdown-4/multimarkdown")
     with open(sys.argv[1], "r") as f:
         data = f.read()
-    metadata, html = mmd.parse(data)
+    metadata = mmd.parse_metadata(data)
+    html = mmd.render_html_snippet(data)
     for key, value in metadata.items():
         print key, "=", value.replace("\n", " ")
     tempfile = "/tmp/mmd-test.generated.html"
