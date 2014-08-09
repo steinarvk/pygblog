@@ -2,6 +2,7 @@ import pystache
 import re
 import os
 import codecs
+from slug import slugify
 
 class BlogPost (object):
     def __init__(self, metadata, html):
@@ -15,6 +16,7 @@ class BlogPost (object):
     def _parse_metadata(self):
         self.title = self._meta("title").strip()
         self.tags = self._meta("tags").split()
+        self.slugs = self._meta("slug").split() or [slugify(self.title)]
 
     def template_args(self, blog):
         tags = []
@@ -25,6 +27,8 @@ class BlogPost (object):
             })
         return {
             "tags": tags,
+            "slug": self.slugs[0],
+            "slugs": self.slugs,
             "title": self.title,
             "html": self.html,
         }
@@ -34,6 +38,7 @@ class Blog (object):
         self.title = title
         self.templates = templates
         self.mmd = mmd
+        self.posts = {}
 
     def url(self, suffix):
         return "http://www.wikipedia.org/" + suffix
@@ -43,14 +48,18 @@ class Blog (object):
             "title": self.title,
         }
 
-    def render_post(self, markdown):
-        post = BlogPost(*self.mmd.parse_all(markdown))
+    def render_post(self, post):
         template = self.templates["blogpost"]
         return pystache.render(template, {
             "blog": self.template_args(),
             "post": post.template_args(self),
         })
 
+    def load_post(self, markdown):
+        post = BlogPost(*self.mmd.parse_all(markdown))
+        for slug in post.slugs:
+            self.posts[slug] = post
+    
 def read_directory_files(directory, pattern):
     regex = re.compile(pattern)
     rv = {}
@@ -78,7 +87,8 @@ if __name__ == '__main__':
     tempfile = "/tmp/mmd-test.generated.html"
     with codecs.open(sys.argv[1], "r", "utf8") as f:
         markdown = f.read()
-    html = blog.render_post(markdown)
+    post = BlogPost(*mmd.parse_all(markdown))
+    html = blog.render_post(post)
     with codecs.open(tempfile, "w", "utf8") as f:
         f.write(html)
     webbrowser.open(tempfile)

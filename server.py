@@ -4,7 +4,8 @@ from blog import Blog, read_templates
 from mmd import MultiMarkdown
 
 urls = (
-    "/post/(.*)", "Post",
+    "/posts/(.+)", "Post",
+    "/posts/", "PostIndex",
 )
 
 # TODO get rid of all these globals
@@ -19,11 +20,26 @@ templates = read_templates(templatedir)
 blog = Blog(blogname, templates, mmd)
 
 with codecs.open(test_filename, "r", "utf8") as f:
-    test_markdown = f.read()
+    blog.load_post(f.read())
+
+def not_found():
+    return web.notfound("404!")
 
 class Post (object):
     def GET(self, slug):
-        return blog.render_post(test_markdown)
+        try:
+            post = blog.posts[slug]
+        except KeyError:
+            raise not_found()
+        return blog.render_post(post)
+
+class PostIndex (object):
+    def GET(self):
+        posts = blog.posts.values()
+        rv = []
+        for post in posts:
+            rv.append(post.slugs[0])
+        return " ".join(rv)
 
 if __name__ == '__main__':
     app.run()
