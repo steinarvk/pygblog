@@ -16,6 +16,14 @@ Decorating text
 ---------------
 
 Text can be _italic_ or **bold**.
+We can also render things in `monospace`.
+
+Single linebreaks are usually ignored.
+This is conventionally just to accommodate a beautiful, readable plaintext
+markdown version of the document.
+However, given that we're going to be putting everything in `git`, we could
+also use it to put each sentence on a separate line, which would improve
+diffing.
 
 You can include any international characters you like, as long as
 everything is encoded in UTF-8: Æ Ø Å, æ ø å, Göteborg, naïveté.
@@ -40,7 +48,8 @@ Links
 -----
 
 [Links](http://www.google.com) are done like this. There is no need to
-write the [target] of the link inline, 
+write the [target] of the link inline, as you can resolve it afterwards.
+If you [forget to resolve] the target of the link, it is renderd like that.
 
 [target]: http://www.wikipedia.org
 
@@ -70,6 +79,29 @@ Unfortunately, despite the superficial similarities, these are **not** `org`
 tables, and `C-c C-c` in Emacs `org-mode` will mess them up. Maybe there's
 another module to handle MMD, and/or one could be made?
 
+Quotes
+------
+
+> The use of COBOL cripples the mind; its teaching should, therefore, be
+> regarded as a criminal offense.
+
+[Edsger Dijkstra] was fairly grumpy but witty.
+
+[Edsger Dijkstra]: http://www.wikipedia.org/wiki/Edsger_Dijkstra
+
+> Oh no, they say he's got to go  
+> Go go Godzilla, yeah  
+> Oh no, there goes Tokyo  
+> Go go Godzilla, yeah 
+
+When quoting lyrics or poetry, use this fairly magical markdown syntax:
+_two spaces_ ending a line indicates that the line break should be
+rendered to the output document. Alternately, with a special option
+passed to multimarkdown, you can end the line with a backslash. This
+may be better, as carrying semantics in invisible elements of the text
+seems crazy (although I understand that the intention was to preserve
+readability in the markdown text itself.
+
 Code blocks
 -----------
 
@@ -94,6 +126,21 @@ Here's an interaction on the REPL:
 ```
 
 That actually looks _great_, which is nice to know.
+
+How about some command-line snippets?
+
+```
+svk@hahn:~/dev/pygblog$ . env/bin/activate
+(env)svk@hahn:~/dev/pygblog$ pip freeze
+argparse==1.2.1
+pystache==0.5.4
+web.py==0.37
+wsgiref==0.1.2
+(env)svk@hahn:~/dev/pygblog$ deactivate 
+svk@hahn:~/dev/pygblog$ 
+```
+
+That doesn't necessarily look awesome, but I suppose it'll do.
 
 `highlight.js` can be configured with its own CSS styles to customize the
 appearance of the highlighted code blocks.
