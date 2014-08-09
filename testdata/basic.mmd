@@ -36,6 +36,40 @@ Lists
 
 You can always write the subheaders with only # characters prefixed.
 
+Links
+-----
+
+[Links](http://www.google.com) are done like this. There is no need to
+write the [target] of the link inline, 
+
+[target]: http://www.wikipedia.org
+
+Tables
+------
+
+Animal                                   |      Sound | Lucky number |
+-----------------------------------------|------------|-------------:|
+Otter                                    | ???        |          135 |
+Cat                                      | mjau       |          437 |
+Dog                                      | bark       |          983 |
+Snubnosed eel (_simenchelys parasitica_) | ???        |         1358 |
+[Table of animals]
+
+These elements are optional:
+
+* The table caption
+* The column name row
+* The column grouping (the first line)
+
+The line full of dashes is _not_ optional.
+
+Lining up the pipe characters is not strictly necessary, but of course it's
+essential if we want the markdown to look nice.
+
+Unfortunately, despite the superficial similarities, these are **not** `org`
+tables, and `C-c C-c` in Emacs `org-mode` will mess them up. Maybe there's
+another module to handle MMD, and/or one could be made?
+
 Code blocks
 -----------
 
@@ -46,3 +80,20 @@ def factorial(n):
 ```
 
 That was some Python code.
+
+Here's an interaction on the REPL:
+
+```python
+>>> def factorial(n):
+...   import operator
+...   return reduce(operator.mul, xrange(2,n+1), 1)
+... 
+>>> factorial(5)
+120
+>>> factorial(10)
+```
+
+That actually looks _great_, which is nice to know.
+
+`highlight.js` can be configured with its own CSS styles to customize the
+appearance of the highlighted code blocks.
