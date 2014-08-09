@@ -1,12 +1,19 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>{{blog_title}} - {{post_title}}</title>
+  <title>{{blog.title}} - {{post.title}}</title>
   <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css">
   <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
-{{{post_html}}}
+<h1>{{post.title}}</h1>
+{{{post.html}}}
+<p>
+<b>Tags</b>:
+{{#post.tags}}
+  <a href="{{url}}">{{name}}</a>
+{{/post.tags}}
+</p>
 </body>
 </html>

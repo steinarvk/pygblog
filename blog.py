@@ -1,25 +1,55 @@
 import pystache
-import mmd
 import re
 import os
 import codecs
 
+class BlogPost (object):
+    def __init__(self, metadata, html):
+        self.metadata = metadata
+        self.html = html
+        self._parse_metadata()
+
+    def _meta(self, key):
+        return self.metadata.get(key, "")
+    
+    def _parse_metadata(self):
+        self.title = self._meta("title").strip()
+        self.tags = self._meta("tags").split()
+
+    def template_args(self, blog):
+        tags = []
+        for tag in self.tags:
+            tags.append({
+                "name": tag,
+                "url": blog.url("/tags/" + tag)
+            })
+        return {
+            "tags": tags,
+            "title": self.title,
+            "html": self.html,
+        }
+
 class Blog (object):
-    def __init__(self, title, templates, mmd_path):
+    def __init__(self, title, templates, mmd):
         self.title = title
         self.templates = templates
-        self.mmd = mmd.MultiMarkdown(mmd_path)
+        self.mmd = mmd
+
+    def url(self, suffix):
+        return "http://www.wikipedia.org/" + suffix
+
+    def template_args(self):
+        return {
+            "title": self.title,
+        }
 
     def render_post(self, markdown):
+        post = BlogPost(*self.mmd.parse_all(markdown))
         template = self.templates["blogpost"]
-        metadata = self.mmd.parse_metadata(markdown)
-        html = self.mmd.render_html_snippet(markdown)
-        args = {
-            "blog_title": self.title,
-            "post_title": metadata["title"].strip(),
-            "post_html": html,
-        }
-        return pystache.render(template, args)
+        return pystache.render(template, {
+            "blog": self.template_args(),
+            "post": post.template_args(self),
+        })
 
 def read_directory_files(directory, pattern):
     regex = re.compile(pattern)
@@ -40,10 +70,11 @@ def read_templates(templatedir):
 
 if __name__ == '__main__':
     import sys, webbrowser
+    from mmd import MultiMarkdown
     templates = read_templates("./template")
-    blog = Blog("My Blog",
-                templates,
-                "./MultiMarkdown-4/multimarkdown")
+    mmd = MultiMarkdown("./MultiMarkdown-4/multimarkdown")
+    mmd.global_headers["Base Header Level"] = 2
+    blog = Blog("My Blog", templates, mmd)
     tempfile = "/tmp/mmd-test.generated.html"
     with codecs.open(sys.argv[1], "r", "utf8") as f:
         markdown = f.read()

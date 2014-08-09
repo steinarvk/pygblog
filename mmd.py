@@ -9,15 +9,23 @@ def valid_key_name(s):
     return ValidKeyRegex.match(s)
 
 class MultiMarkdown (object):
-    def __init__(self, path):
+    def __init__(self, path, global_headers={}):
         self.path = path
+        self.global_headers = {}
+
+    def encode_global_headers(self):
+        rv = []
+        for key, value in self.global_headers.items():
+            rv.append("{}: {}\n".format(key, value))
+        return "".join(rv)
 
     def call(self, text, *args):
         cmdline = [self.path]
         cmdline.extend(args)
         p = Popen(cmdline, stdin=PIPE, stdout=PIPE)
+        headers = self.encode_global_headers()
         data = text.encode("utf8")
-        rv, _ = p.communicate(data)
+        rv, _ = p.communicate(headers + data)
         if p.returncode:
             raise MMDParseError()
         return rv.decode("utf8")
@@ -35,6 +43,10 @@ class MultiMarkdown (object):
     def render_html_snippet(self, data):
         """Parse MMD string and return a HTML snippet."""
         return self.call(data, "--snippet")
+
+    def parse_all(self, data):
+        """Parse MMD string and return (metadata dict, HTML snippet)."""
+        return self.parse_metadata(data), self.render_html_snippet(data)
     
 if __name__ == '__main__':
     import webbrowser
