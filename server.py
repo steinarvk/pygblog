@@ -5,7 +5,7 @@ from mmd import MultiMarkdown
 
 urls = (
     "/posts/(.+)", "Post",
-    "/posts/", "PostIndex",
+    "/posts", "PostIndex",
 )
 
 # TODO get rid of all these globals
@@ -36,10 +36,7 @@ class Post (object):
 class PostIndex (object):
     def GET(self):
         posts = blog.posts.values()
-        rv = []
-        for post in posts:
-            rv.append(post.slugs[0])
-        return " ".join(rv)
+        return blog.render_index(posts)
 
 if __name__ == '__main__':
     app.run()

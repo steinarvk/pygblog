@@ -25,10 +25,13 @@ class BlogPost (object):
                 "name": tag,
                 "url": blog.url("/tags/" + tag)
             })
+        slug = self.slugs[0]
+        url = blog.url("/posts/" + slug)
         return {
             "tags": tags,
-            "slug": self.slugs[0],
+            "slug": slug,
             "slugs": self.slugs,
+            "url": url,
             "title": self.title,
             "html": self.html,
         }
@@ -41,7 +44,10 @@ class Blog (object):
         self.posts = {}
 
     def url(self, suffix):
-        return "http://www.wikipedia.org/" + suffix
+        url = suffix
+        if not url.startswith("/"):
+            url = "/" + url
+        return url
 
     def template_args(self):
         return {
@@ -53,6 +59,12 @@ class Blog (object):
         return pystache.render(template, {
             "blog": self.template_args(),
             "post": post.template_args(self),
+        })
+
+    def render_index(self, posts):
+        template = self.templates["blogindex"]
+        return pystache.render(template, {
+            "posts": [post.template_args(self) for post in posts]
         })
 
     def load_post(self, markdown):
