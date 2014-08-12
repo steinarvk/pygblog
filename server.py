@@ -5,7 +5,7 @@ from mmd import MultiMarkdown
 
 urls = (
     "/posts/(.+)", "Post",
-    "/posts", "PostIndex",
+    "/posts/?", "PostIndex",
 )
 
 # TODO get rid of all these globals
