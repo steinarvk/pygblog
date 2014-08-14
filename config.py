@@ -84,6 +84,7 @@ def config_basename(composite_key):
 
 def parse_args_to_config(cmdargs=None,
                          defaults=Defaults,
+                         default_config_filename="blog.yaml",
                          description=Description,
                          switches=CommandLineSwitches):
     parser = argparse.ArgumentParser(description=description)
@@ -102,7 +103,8 @@ def parse_args_to_config(cmdargs=None,
                             type=data["type"],
                             help=helpmessage)
     args = parser.parse_args(cmdargs)
-    for config_filename in args.configs:
+    configs = args.configs or [default_config_filename]
+    for config_filename in configs:
         cc.add_overrides(YamlConfig.load_file(config_filename))
     cc.add_overrides(ArgparseConfig(args))
     return cc
