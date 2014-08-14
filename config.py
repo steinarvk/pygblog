@@ -8,6 +8,16 @@ Defaults = {
     },
 }
 
+Description = "Simple blogging engine based on multimarkdown."
+
+CommandLineSwitches = {
+    "server.port": {
+        "arg": "--port",
+        "type": int,
+        "help": "port for the server to listen on",
+    },
+}
+
 def deep_get_in_configs(configs, keys):
     for config in configs:
         try:
@@ -65,14 +75,32 @@ class ArgparseConfig (object):
             raise KeyError
         return rv
 
-def parse_args_to_config(cmdargs=None, defaults=Defaults):
-    desc="Simple blogging engine based on multimarkdown."
-    parser = argparse.ArgumentParser(desc)
+def config_basename(composite_key):
+    try:
+        i = composite_key.rindex(".")
+    except ValueError:
+        return composite_key
+    return composite_key[i+1:]
+
+def parse_args_to_config(cmdargs=None,
+                         defaults=Defaults,
+                         description=Description,
+                         switches=CommandLineSwitches):
+    parser = argparse.ArgumentParser(description=description)
     cc = ConfigCascade(CookedConfig(defaults))
-    parser.add_argument("configs", metavar="CFG", type=str, nargs="*",
-                        help="Configuration files to load (searched in order)")
-    parser.add_argument("--port", dest="server.port", type=int,
-                        help="Port for the server to listen on (server.port)")
+    parser.add_argument("configs",
+                        metavar="CFG",
+                        type=str,
+                        nargs="*",
+                        help="configuration files to load (searched in order)")
+    for dest, data in switches.items():
+        helpmessage = "{} ({})".format(data["help"], dest)
+        metavar = config_basename(dest).upper()
+        parser.add_argument(data["arg"],
+                            dest=dest,
+                            metavar=metavar,
+                            type=data["type"],
+                            help=helpmessage)
     args = parser.parse_args(cmdargs)
     for config_filename in args.configs:
         cc.add_overrides(YamlConfig.load_file(config_filename))
