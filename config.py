@@ -65,10 +65,10 @@ class ArgparseConfig (object):
             raise KeyError
         return rv
 
-def parse_args_to_config(cmdargs=None):
+def parse_args_to_config(cmdargs=None, defaults=Defaults):
     desc="Simple blogging engine based on multimarkdown."
     parser = argparse.ArgumentParser(desc)
-    cc = ConfigCascade(CookedConfig(Defaults))
+    cc = ConfigCascade(CookedConfig(defaults))
     parser.add_argument("configs", metavar="CFG", type=str, nargs="*",
                         help="Configuration files to load (searched in order)")
     parser.add_argument("--port", dest="server.port",
