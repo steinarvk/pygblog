@@ -1,10 +1,21 @@
 import yaml
 import codecs
 import argparse
+import os.path
 
 Defaults = {
     "server": {
         "port": 8080,
+    },
+    "articles": {
+        "path": "articles/",
+    },
+    "templates": {
+        "path": "templates/",
+    },
+    "mmd": {
+        "path": "./MultiMarkdown-4/multimarkdown",
+        "header-level": 1,
     },
 }
 
@@ -12,9 +23,17 @@ Description = "Simple blogging engine based on multimarkdown."
 
 CommandLineSwitches = {
     "server.port": {
-        "arg": "--port",
         "type": int,
         "help": "port for the server to listen on",
+    },
+    "templates.path": {
+        "help": "path under which to search for templates",
+    },
+    "articles.path": {
+        "help": "path under which to search for articles",
+    },
+    "blog.title": {
+        "help": "blog title",
     },
 }
 
@@ -24,14 +43,17 @@ def deep_get_in_configs(configs, keys):
             return deep_get_in_config(config, keys)
         except KeyError:
             pass
-    raise KeyError
+    raise KeyError(keys)
+
+def split_composite_key(composite_key):
+    return composite_key.split(".")
 
 class CookedConfig (object):
     def __init__(self, config={}):
         self.config = config
 
     def __getitem__(self, composite_key):
-        keys = composite_key.split(".")
+        keys = split_composite_key(composite_key)
         node = self.config
         for key in keys:
             node = node[key]
@@ -47,7 +69,7 @@ class ConfigCascade (object):
                 return config[key]
             except KeyError:
                 pass
-        raise KeyError
+        raise KeyError(key)
 
     def add_overrides(self, config):
         self.configs.append(config)
@@ -72,7 +94,7 @@ class ArgparseConfig (object):
     def __getitem__(self, key):
         rv = self.config[key]
         if rv is None:
-            raise KeyError
+            raise KeyError(key)
         return rv
 
 def config_basename(composite_key):
@@ -97,17 +119,30 @@ def parse_args_to_config(cmdargs=None,
     for dest, data in switches.items():
         helpmessage = "{} ({})".format(data["help"], dest)
         metavar = config_basename(dest).upper()
-        parser.add_argument(data["arg"],
+        arg = "--" + "-".join(split_composite_key(dest))
+        parser.add_argument(arg,
                             dest=dest,
                             metavar=metavar,
-                            type=data["type"],
+                            type=data.get("type",str),
                             help=helpmessage)
     args = parser.parse_args(cmdargs)
     configs = args.configs or [default_config_filename]
     for config_filename in configs:
         cc.add_overrides(YamlConfig.load_file(config_filename))
     cc.add_overrides(ArgparseConfig(args))
+    if args.configs:
+        primary_config = args.configs[0]
+        basepath, _ = os.path.split(os.path.abspath(primary_config))
+        cc.add_overrides({"basepath": basepath})
     return cc
+
+def get_path(cfg, key):
+    relpath = cfg[key]
+    if relpath.startswith(".") or relpath.startswith("/"):
+        return relpath
+    basepath = cfg["basepath"]
+    joined = os.path.join(basepath, relpath)
+    return os.path.abspath(joined)
 
 if __name__ == '__main__':
     import sys

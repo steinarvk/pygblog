@@ -64,6 +64,7 @@ class Blog (object):
     def render_index(self, posts):
         template = self.templates["blogindex"]
         return pystache.render(template, {
+            "blog": self.template_args(),
             "posts": [post.template_args(self) for post in posts]
         })
 
@@ -72,22 +73,35 @@ class Blog (object):
         for slug in post.slugs:
             self.posts[slug] = post
     
-def read_directory_files(directory, pattern):
+def read_directory_files(directory, pattern, by="pattern"):
     regex = re.compile(pattern)
     rv = {}
-    for filename in os.listdir(directory):
-        m = regex.match(filename)
-        if not m:
-            continue
-        path = os.path.join(directory, filename)
-        name = m.groups()[0]
-        with codecs.open(path, "r", "utf8") as f:
-            rv[name] = f.read()
+    for root, dirs, files in os.walk(directory):
+        for filename in files:
+            m = regex.match(filename)
+            if not m:
+                continue
+            path = os.path.join(root, filename)
+            def key_by_path():
+                return path
+            def key_by_pattern():
+                return m.groups()[0]
+            key = {
+                "path": key_by_path,
+                "pattern": key_by_pattern,
+            }[by]()
+            name = m.groups()[0]
+            with codecs.open(path, "r", "utf8") as f:
+                rv[key] = f.read()
     return rv
 
 def read_templates(templatedir):
     pattern = r"(.*)\.html$"
     return read_directory_files(templatedir, pattern)
+
+def read_articles(articledir):
+    pattern = r"(.*)\.mmd$"
+    return read_directory_files(articledir, pattern)
 
 if __name__ == '__main__':
     import sys, webbrowser
