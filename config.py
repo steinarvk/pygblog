@@ -71,7 +71,7 @@ def parse_args_to_config(cmdargs=None, defaults=Defaults):
     cc = ConfigCascade(CookedConfig(defaults))
     parser.add_argument("configs", metavar="CFG", type=str, nargs="*",
                         help="Configuration files to load (searched in order)")
-    parser.add_argument("--port", dest="server.port",
+    parser.add_argument("--port", dest="server.port", type=int,
                         help="Port for the server to listen on (server.port)")
     args = parser.parse_args(cmdargs)
     for config_filename in args.configs:
