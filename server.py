@@ -7,6 +7,7 @@ from mmd import MultiMarkdown
 urls = (
     "/posts/(.+)", "Post",
     "/posts/?", "PostIndex",
+    "/tags/(.+)", "PostTagQuery",
 )
 
 class Application (web.application):
@@ -33,6 +34,14 @@ class PostIndex (object):
     def GET(self):
         blog = web.ctx.blog
         posts = blog.posts.values()
+        return blog.render_index(posts)
+
+class PostTagQuery (object):
+    def GET(self, tagquery):
+        import tags
+        blog = web.ctx.blog
+        posts = blog.tag_query(tagquery)
+        # impose friendly ordering?
         return blog.render_index(posts)
 
 def create_mmd(cfg):

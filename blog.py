@@ -3,6 +3,7 @@ import re
 import os
 import codecs
 from slug import slugify
+from collections import defaultdict
 
 class BlogPost (object):
     def __init__(self, metadata, html):
@@ -42,6 +43,42 @@ class Blog (object):
         self.templates = templates
         self.mmd = mmd
         self.posts = {}
+        self.all_posts = []
+        self.posts_tagged = defaultdict(lambda : [])
+        self._canonical_post_key = id
+        def comparator(a, b):
+            return self._canonical_post_key(a) - self._canonical_post_key(b)
+        self._canonical_post_comparator = comparator
+
+    def _canonicalize_post_list(self, postlist):
+        postlist.sort(key=self._canonical_post_key)
+
+    def _add_tagged(self, tag, post):
+        rv = self.posts_tagged[tag]
+        if post not in rv:
+            rv.append(post)
+        self._canonicalize_post_list(rv)
+        self.posts_tagged[tag] = rv
+
+    def tag_size(self, tag):
+        return len(self.posts_tagged[tag])
+
+    def tag_fetch(self, tag, negate=False):
+        if negate:
+            for post in self.all_posts:
+                if tag not in post.tags:
+                    yield post
+        else:
+            for post in self.posts_tagged[tag]:
+                yield post
+
+    def tag_query(self, query):
+        import tags
+        pquery = tags.parse_tag_query(query)
+        pquery = tags.reorder_query(pquery, self.tag_size)
+        return tags.perform_query(pquery,
+                                  self._canonical_post_comparator,
+                                  self.tag_fetch)
 
     def url(self, suffix):
         url = suffix
@@ -70,6 +107,10 @@ class Blog (object):
 
     def load_post(self, markdown):
         post = BlogPost(*self.mmd.parse_all(markdown))
+        self.all_posts.append(post)
+        self._canonicalize_post_list(self.all_posts)
+        for tag in post.tags:
+            self._add_tagged(tag, post)
         for slug in post.slugs:
             self.posts[slug] = post
     
