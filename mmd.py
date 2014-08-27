@@ -11,7 +11,7 @@ def valid_key_name(s):
 class MultiMarkdown (object):
     def __init__(self, path, global_headers={}):
         self.path = path
-        self.global_headers = {}
+        self.global_headers = global_headers
 
     def encode_global_headers(self):
         rv = []
