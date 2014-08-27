@@ -1,0 +1,4 @@
+templates:
+  path: ./template/
+mmd:
+  header-level: 2
